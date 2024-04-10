@@ -1,0 +1,59 @@
+import {Page,Locator,} from 'playwright';
+import { Keyboard, expect } from 'playwright/test';
+
+export class OrdersReviewPage
+{
+    private page;
+    private country;
+    private dropdown;
+    private emailId;
+    private submit;
+    private orderConfirmationText;
+    private orderId;
+    private keyboard:Keyboard;
+
+constructor(page)
+{
+this.page = page;
+this.country = page.locator("[placeholder*='Country']");
+this.dropdown = page.locator(".ta-results");
+this.emailId = page.locator(".user__name [type='text']").first();
+this.submit =  page.locator(".action__submit");
+this.orderConfirmationText = page.locator(".hero-primary");
+this.orderId = page.locator(".em-spacer-1 .ng-star-inserted");
+
+
+}
+async searchCountrycode(countryCode){
+    await this.country.fill(countryCode,{delay:1000});
+}
+async searchCountryAndSelect(countryName)
+{
+
+    await this.dropdown.waitFor();
+    const optionsCount = await this.dropdown.locator("button").count();
+    for(let i =0;i< optionsCount; ++i)
+    {
+      const  text =  await this.dropdown.locator("button").nth(i).textContent();
+        if(text.trim() === countryName)
+        {
+           await this.dropdown.locator("button").nth(i).click();
+           break;
+        }
+    }
+
+}
+
+async VerifyEmailId(username)
+{
+    await expect(this.emailId).toHaveText(username);
+}
+
+async SubmitAndGetOrderId()
+{
+ await this.submit.click();
+ await expect(this.orderConfirmationText).toHaveText(" Thankyou for the order. ");
+ return await this.orderId.textContent();
+}
+}
+module.exports = {OrdersReviewPage};
